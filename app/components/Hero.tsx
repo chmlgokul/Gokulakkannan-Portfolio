@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import ProfileCircle from "./ProfileCircle";
 import LockAnimation from "./LockAnimation";
 import InfoRow from "./InfoRow";
@@ -20,6 +20,25 @@ export default function Hero() {
   const [showLock, setShowLock] = useState(false);
   const [showPortfolio, setShowPortfolio] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [musicPlaying, setMusicPlaying] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const toggleThemeMusic = async () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    if (audio.paused) {
+      try {
+        await audio.play();
+        setMusicPlaying(true);
+      } catch {
+        setMusicPlaying(false);
+      }
+    } else {
+      audio.pause();
+      setMusicPlaying(false);
+    }
+  };
 
   // Console Animation
   useEffect(() => {
@@ -76,6 +95,26 @@ export default function Hero() {
 
   return (
     <main className="min-h-screen bg-black flex flex-col items-center py-16 px-6">
+      <audio
+        ref={audioRef}
+        src="/audio/version6_immersive_surround_stereo_preview.wav"
+        loop
+        preload="auto"
+        onPlay={() => setMusicPlaying(true)}
+        onPause={() => setMusicPlaying(false)}
+      />
+
+      {verified && (
+        <button
+          type="button"
+          onClick={toggleThemeMusic}
+          aria-label={musicPlaying ? "Pause theme music" : "Play theme music"}
+          title={musicPlaying ? "Pause theme music" : "Play theme music"}
+          className="fixed right-4 top-1/2 z-50 -translate-y-1/2 rounded-full border border-green-500 bg-black/90 px-4 py-3 font-mono text-sm text-green-400 shadow-[0_0_18px_rgba(34,197,94,0.25)] transition hover:bg-green-950 focus:outline-none focus:ring-2 focus:ring-green-400"
+        >
+          {musicPlaying ? "Ⅱ Pause" : "▶ Play"}
+        </button>
+      )}
 
       {/* ---------------- TITLE ---------------- */}
 
@@ -95,6 +134,12 @@ export default function Hero() {
             onClick={() => {
               setVerified(true);
               setShowConsole(true);
+
+              const audio = audioRef.current;
+              if (audio) {
+                audio.volume = 0.35;
+                audio.play().catch(() => setMusicPlaying(false));
+              }
             }}
           />
 
